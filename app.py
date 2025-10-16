@@ -679,22 +679,15 @@ def main():
                         title = playlist['name']
                         meta = f"{playlist.get('source','Default')} • {playlist.get('tracks_total','Unknown')} tracks"
                         hero_bg = EMOTION_THEMES.get(emotion, '#1f1f1f')
-                        st.markdown(
-                            f"""
-                            <div class="album-card">
-                              <div class="album-hero" style="background: linear-gradient(135deg, {hero_bg}55, #1b1b1b 70%);">
-                                <img class="album-cover" src="{cover}" onerror="this.style.display='none'" />
-                                <div>
-                                  <div class="album-title">{title}</div>
-                                  <div class="album-meta">{meta}</div>
-                                  <div style="margin-top:6px;">{'<span class=\"badge\">'+lang_tag.title()+'</span>' if lang_tag else ''}</div>
-                                </div>
-                              </div>
-                              <div class="album-body"></div>
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
+                        header_html = (
+                            '<div class="sticky-header">'
+                            '<span style="font-size:1.25rem;font-weight:700;">🎵 Emotion-Based Music Recommender</span>'
+                            '<span class="chip">Theme: ' + EMOTION_THEME_NAMES.get(current_emotion, 'Minimal') + '</span>'
+                            '<span class="chip">Language: ' + ('Auto' if st.session_state.preferred_language == 'auto' else st.session_state.preferred_language.title()) + '</span>'
+                            '<span class="chip" style="background:' + ('#1DB954' if st.session_state.get('camera_active') else '#7a7a7a') + ';color:white;">' + ('Camera On' if st.session_state.get('camera_active') else 'Camera Off') + '</span>'
+                            '</div>'
                         )
+                        st.markdown(header_html, unsafe_allow_html=True)
                         if spotify_url:
                             st.markdown(f"[🎧 Open in Spotify]({spotify_url})")
                             # Auto-embed based on global setting
