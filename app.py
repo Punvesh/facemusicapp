@@ -567,27 +567,7 @@ def main():
                 st.bar_chart({k: v for k, v in emotion_info['emotions'].items()})
             else:
                 st.info("👀 No emotion detected yet. Start the camera and show your face!")
-                      # Browser camera snapshot fallback (works on Render)
-        st.subheader("📸 Browser Camera (Snapshot)")
-        snap = st.camera_input("Take a photo")
-        if snap is not None:
-            try:
-                # Convert snapshot to numpy RGB frame
-                img = Image.open(snap)
-                frame = np.array(img.convert('RGB'))
-                # Run existing detector
-                emotion_info = st.session_state.emotion_detector.detect_emotion(frame)
-                if emotion_info:
-                    st.session_state.current_emotion = emotion_info
-                    update_mood_history(emotion_info['emotion'], emotion_info['confidence'])
-                    st.success(f"Detected: {emotion_info['label']} — {emotion_info['genre']}")
-                    st.image(frame, caption="Snapshot", use_column_width=True)
-                else:
-                    st.warning("No face/emotion detected. Try another snapshot with better lighting.")
-            except Exception as e:
-                st.warning(f"Could not process snapshot: {e}")
-
-
+                     
         # NEW: Centered Recommendations section below camera
         st.markdown("<div class='separator'></div>", unsafe_allow_html=True)
         st.subheader("🎵 Recommended for You")
