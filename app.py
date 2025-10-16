@@ -335,6 +335,8 @@ def main():
         st.session_state.last_detection_time = 0
     if 'spotify_configured' not in st.session_state:
         st.session_state.spotify_configured = False
+    if 'preferred_languages' not in st.session_state:
+        st.session_state.preferred_languages = []
     
     # Auto-configure Spotify if credentials are in config file
     if not st.session_state.spotify_configured:
@@ -404,6 +406,14 @@ def main():
                     st.error("❌ Spotify API setup failed!")
             else:
                 st.warning("⚠️ Please enter both Client ID and Client Secret")
+
+        st.subheader("🌐 Language Preferences")
+        languages = ["Tamil", "Telugu", "Malayalam", "Kannada", "Hindi"]
+        st.session_state.preferred_languages = st.multiselect(
+            "Select preferred languages",
+            options=languages,
+            default=[]
+        )
         
         # Mood History Chart in Sidebar
         st.subheader("📊 Mood History")
@@ -538,7 +548,9 @@ def main():
             emotion = st.session_state.current_emotion['emotion']
             
             # Get music recommendations
-            playlists = st.session_state.music_recommender.get_recommended_playlists(emotion, 3)
+            playlists = st.session_state.music_recommender.get_recommended_playlists(
+                emotion, 3, st.session_state.preferred_languages
+            )
             
             if playlists:
                 st.markdown(f"""
@@ -561,9 +573,14 @@ def main():
                             else:
                                 spotify_url = st.session_state.music_recommender.create_spotify_playlist_url(playlist['id'])
                                 st.markdown(f"[🎧 Open in Spotify]({spotify_url})")
-                        else:
-                            st.info("Default playlist - no Spotify link available")
-                        
+
+                            # -- START: EMBEDDED PLAYER --
+                            playlist_id = playlist['id']
+                            embed_url = f"https://open.spotify.com/embed/playlist/{playlist_id}"
+                            st.markdown(
+                                f'<iframe src="{embed_url}" width="100%" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>',
+                                unsafe_allow_html=True
+                            )
                         # Like/Dislike buttons for user feedback
                         playlist_id = playlist.get('id', f'playlist_{i}')
                         col_like, col_dislike = st.columns(2)

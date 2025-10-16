@@ -159,30 +159,35 @@ class MusicRecommender:
             'description': 'Music to match your current mood.'
         })
     
-    def get_recommended_playlists(self, emotion: str, limit: int = 3) -> List[Dict]:
+    def get_recommended_playlists(self, emotion: str, limit: int = 3, preferred_languages: List[str] = None) -> List[Dict]:
         """
-        Get recommended playlists for a detected emotion
+        Get recommended playlists for a detected emotion, with language preferences.
         
         Args:
             emotion (str): Detected emotion
             limit (int): Maximum number of playlists to return
+            preferred_languages (List[str]): List of preferred languages
             
         Returns:
             List[Dict]: List of recommended playlists
         """
         if emotion not in self.emotion_to_genre:
-            emotion = 'neutral'  # Default to neutral if emotion not recognized
-        
-        # Get default playlists for the emotion
+            emotion = 'neutral'
+
         playlists = self.default_playlists.get(emotion, [])
-        
-        # If Spotify is configured, try to get real playlists
+
         if self.spotify_configured and self.spotify_client:
             try:
-                # Search for playlists based on emotion and genre
                 emotion_info = self.get_emotion_info(emotion)
-                search_query = f"{emotion} {emotion_info['mood']} music"
                 
+                # -- START: MODIFIED SEARCH LOGIC --
+                language_query = ""
+                if preferred_languages:
+                    language_query = " OR ".join(preferred_languages)
+                
+                search_query = f"{emotion_info['mood']} {language_query} music"
+                # -- END: MODIFIED SEARCH LOGIC --
+
                 results = self.spotify_client.search(
                     q=search_query,
                     type='playlist',
@@ -201,13 +206,11 @@ class MusicRecommender:
                             'source': 'Spotify'
                         })
                     
-                    # Combine with default playlists
                     playlists = spotify_playlists + playlists[:max(0, limit - len(spotify_playlists))]
                 
             except Exception as e:
                 st.warning(f"⚠️ Could not fetch Spotify playlists: {str(e)}")
         
-        # Ensure we return the requested number of playlists
         return playlists[:limit]
     
     def get_playlist_tracks(self, playlist_id: str, limit: int = 5) -> List[Dict]:
